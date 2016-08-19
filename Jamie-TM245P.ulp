@@ -1,16 +1,12 @@
-#usage "<b>Data generation for TM245P mounting machines</b>\n"
+#usage "<b>TM245P pick and place file generator</b>\n"
        "<p>"
-       "Generates config files for smds on the top and bottom layers "
-       "wich can be used with Neoden TM245P pick and place machines. "
-       "The x and y coordinates (units: microns) of the SMD elements "
-       "are calculated as mean of maximum and mimimum value of the "
-       "smds origin points. The calculated value does not necessarily "
-       "fit with the origin point of the part in the layout."
-       "<p>"
-       "<author>Author: Patrick Van Oosterwijck (patrick@silicognition.com),"
+       "Generates control files for the TM245P pick and place machine."
+       "</p>"
+       "<author>Modified by Jamie Laing, Authored by Patrick Van Oosterwijck (patrick@silicognition.com),"
        "adapted from code found on DangerousPrototypes.com</author>"
 
 // THIS PROGRAM IS PROVIDED AS IS AND WITHOUT WARRANTY OF ANY KIND, EXPRESSED OR IMPLIED
+
 
 if (board) board(B) {
 
@@ -26,7 +22,7 @@ if (board) board(B) {
 	      "#Stack_S,X1,Y1,X2,Y2,Pick Depth,Place Depth,Pick Delay,Place Delay,SizeX,SizeY,"
 	      "Rate,Speed,Torque,Vacuum 1,Vacuum 2,Vacuum Off,Calibration,Skip,Chip X,Chip Y,"
 	      "Loop X,Loop Y\n#Board,OffsetX,OffsetY,Skip\n"
-	      "10201,0,0,0,,\n#Part,Nozzle,Stack,X,Y,Angle,Skip,Name,Value,MPN\n", B.name);
+	      "10201,0,0,0,,\n#Part,Nozzle,Stack,X,Y,Angle,Skip,Name,Value\n", B.name);
 
     B.elements(E) {
       int wasSmd = 0,
@@ -48,6 +44,7 @@ if (board) board(B) {
       }
       
       if (wasSmd) {
+
 			string strMPN = "";
 			E.attributes(A){
 				if(A.name == "MPN"){
@@ -60,9 +57,9 @@ if (board) board(B) {
 		    else
 		      angle = E.angle - 360;
 
-	      printf("%d,1,,%.0f,%.0f,%.0f,0,%s,%s,%s\n",
+	      printf("%d,1,,%.0f,%.0f,%.0f,0,%s,%s\n",
             line++, u2mic((xmin + xmax)/2), u2mic((ymin + ymax)/2),
-            angle, E.name, E.value, strMPN);
+            angle, E.name, strMPN);
 	    }
     }
   }
@@ -100,15 +97,22 @@ if (board) board(B) {
         }
       }
 
+	  string strMPN = "";
+	  E.attributes(A) {
+		  if (A.name == "MPN") {
+			  strMPN = A.value;
+		  }
+	  }
+
       if (wasSmd) {
 		    if(E.angle <= 180)
 		      angle = E.angle;
 		    else
 		      angle = E.angle - 360;
 
-	      printf("%d,1,,%.0f,%.0f,%.0f,0,%s,%s-%s\n",
-            line++, u2mic((xmin + xmax)/2), u2mic((ymin + ymax)/2),
-            angle, E.name, E.value, E.package.name);
+			printf("%d,1,,%.0f,%.0f,%.0f,0,%s,%s\n",
+				line++, u2mic((xmin + xmax) / 2), u2mic((ymin + ymax) / 2),
+				angle, E.name, strMPN);
 	    }
     }
   }
