@@ -22,7 +22,7 @@ if (board) board(B) {
 	      "#Stack_S,X1,Y1,X2,Y2,Pick Depth,Place Depth,Pick Delay,Place Delay,SizeX,SizeY,"
 	      "Rate,Speed,Torque,Vacuum 1,Vacuum 2,Vacuum Off,Calibration,Skip,Chip X,Chip Y,"
 	      "Loop X,Loop Y\n#Board,OffsetX,OffsetY,Skip\n"
-	      "10201,0,0,0,,\n#Component,Nozzle,Stack,X,Y,Angle,Skip,Name,Value\n", B.name);
+	      "10201,0,0,0,,\n#Part,Nozzle,Stack,X,Y,Angle,Skip,Name,Value\n", B.name);
 
     B.elements(E) {
       int wasSmd = 0,
