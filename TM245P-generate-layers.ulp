@@ -75,7 +75,6 @@ void saveLayer(string strTargetLayer) {
 if (board) board(B) {
 	saveLayer("Top");
 	saveLayer("Bottom");
-	//generateFiles();
 } 
 else {
   dlgMessageBox("\n    Start this ULP in a Board    \n");
