@@ -1,0 +1,85 @@
+#usage "<b>TM245P pick and place file generator</b>\n"
+	"<p>Generates control files for the TM245P pick and place machine.</p>"
+	"<author>Authored by Jamie Laing (jlaing@ChicagoRobotics.net), based on work done by Patrick Van Oosterwijck (patrick@silicognition.com),"
+	"adapted from code found on DangerousPrototypes.com</author>"
+
+// Provided as is, without warranty.  Use at your own risk.
+
+
+void saveLayer(string strTargetLayer) {
+	int intTargetLayer = 1;
+	if (strTargetLayer == "Bottom") {
+		intTargetLayer = 16;
+	}
+	board(B) {
+		string strFilePath = filedir(B.name);
+		string strFileName = strFilePath + "TM245P-" + strTargetLayer + "-Layer " + filename(B.name);
+		string fileSave = filesetext(strFileName, ".csv");
+
+		string strSaveName = dlgFileSave(strTargetLayer + " - Save File", fileSave, "*.csv");
+
+		if (fileSave == "") {
+			exit(0);
+		}
+
+		output(strSaveName) {
+			int line = 1;
+
+			printf("#%s " + strTargetLayer + "Layer\n#Stack,X1,Y1,X2,Y2,Pick Depth,Place Depth,Pick Delay,Place Delay,SizeX,"
+				"SizeY,Rate,Speed,Torque,Vacuum 1,Vacuum 2,Vacuum Off,Calibration,Skip,,,,\n"
+				"#Stack_S,X1,Y1,X2,Y2,Pick Depth,Place Depth,Pick Delay,Place Delay,SizeX,SizeY,"
+				"Rate,Speed,Torque,Vacuum 1,Vacuum 2,Vacuum Off,Calibration,Skip,Chip X,Chip Y,"
+				"Loop X,Loop Y\n#Board,OffsetX,OffsetY,Skip\n"
+				"10201,0,0,0,,\n#Part,Nozzle,Stack,X,Y,Angle,Skip,Name,Value\n", B.name);
+
+			B.elements(E) {
+				int wasSmd = 0,
+					xmax = -2147483648,
+					xmin = 2147483647,
+					ymax = xmax,
+					ymin = xmin;
+				real angle = 0;
+
+				E.package.contacts(C) {
+					if (C.smd && C.smd.layer == intTargetLayer) {
+						wasSmd = 1;
+						if (C.x > xmax) xmax = C.x;
+						if (C.y > ymax) ymax = C.y;
+						if (C.x < xmin) xmin = C.x;
+						if (C.y < ymin) ymin = C.y;
+					}
+				}
+
+				if (wasSmd) {
+					string strMPN = "";
+					E.attributes(A) {
+						if (A.name == "MPN") {
+							strMPN = A.value;
+						}
+					}
+
+					if (E.angle <= 180) {
+						angle = E.angle;
+					}
+					else {
+						angle = E.angle - 360;
+					}
+
+					printf("%d,1,,%.0f,%.0f,%.0f,0,%s,%s\n", line++, u2mic((xmin + xmax) / 2), u2mic((ymin + ymax) / 2), angle, E.name, strMPN);
+				}
+			}
+		}
+	}
+}
+
+if (board) board(B) {
+	saveLayer("Top");
+	saveLayer("Bottom");
+	//generateFiles();
+} 
+else {
+  dlgMessageBox("\n    Start this ULP in a Board    \n");
+  exit(0);
+}
+
+
