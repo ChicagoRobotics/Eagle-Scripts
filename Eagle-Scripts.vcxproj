@@ -110,11 +110,10 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
-    <None Include="CRC - TM245P generate layers.ulp" />
+    <None Include="TM245P generate layers.ulp" />
     <None Include="Jamie-gerb274x.cam" />
     <None Include="Jamie-Neoden4-v2.ulp" />
     <None Include="Jamie-panelize.ulp" />
-    <None Include="Jamie-TM245P - file naming.ulp" />
     <None Include="Jamie-TM245P.ulp" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />

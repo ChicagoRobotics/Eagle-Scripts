@@ -19,7 +19,6 @@
     <None Include="Jamie-gerb274x.cam" />
     <None Include="Jamie-panelize.ulp" />
     <None Include="Jamie-Neoden4-v2.ulp" />
-    <None Include="Jamie-TM245P - file naming.ulp" />
-    <None Include="CRC - TM245P generate layers.ulp" />
+    <None Include="TM245P generate layers.ulp" />
   </ItemGroup>
 </Project>
