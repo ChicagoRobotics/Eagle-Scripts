@@ -34,15 +34,16 @@ void saveLayer(string strTargetLayer) {
 
 			B.elements(E) {
 				int wasSmd = 0,
-					xmax = -2147483648,
-					xmin = 2147483647,
-					ymax = xmax,
-					ymin = xmin;
+				xmax = -2147483648,
+				xmin = 2147483647,
+				ymax = xmax,
+				ymin = xmin;
 				real angle = 0;
 
 				E.package.contacts(C) {
 					if (C.smd && C.smd.layer == intTargetLayer) {
 						wasSmd = 1;
+						//Locating the center of the part, not the origin of the part.
 						if (C.x > xmax) xmax = C.x;
 						if (C.y > ymax) ymax = C.y;
 						if (C.x < xmin) xmin = C.x;

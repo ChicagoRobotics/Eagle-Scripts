@@ -1,72 +1,113 @@
-#usage  "<b>Neoden4 file output script</b>\n"
-"<p>Generates control files for the Neoden4 pick and place machine.</p>"
-"<author>Modified by Jamie Laing, Authored by Patrick Van Oosterwijck (patrick@silicognition.com),"
-"adapted from code found on DangerousPrototypes.com</author>"
+#usage "<b>TM245P pick and place file generator</b>\n"
+	"<p>Generates control files for the TM245P pick and place machine.</p>"
+	"<author>Authored by Jamie Laing (jlaing@ChicagoRobotics.net), based on work done by Patrick Van Oosterwijck (patrick@silicognition.com),"
+	"adapted from code found on DangerousPrototypes.com</author>"
 
-board(B) {
+// Provided as is, without warranty.  Use at your own risk.
 
-	// Get filename
-	string fileName = dlgFileSave("Top - Save File", filesetext(B.name, "-N4-top.csv"), "*.csv");
-	if (fileName == "") exit(0);
+void saveLayer(string strTargetLayer, real firstX, real firstY) {
 
-	real mx = -1.0;
-	real my = -1.0;
-	real cx = 0.0;
-	real cy = 0.0;
-	int Result = dlgDialog("Machine parameters") {
+	int intTargetLayer = 1;
+	if (strTargetLayer == "Bottom") {
+		intTargetLayer = 16;
+	}
+
+	real offsetX = 0.0;
+	real offsetY = 0.0;
+	board(B) {
+		string strFilePath = filedir(B.name);
+		string strFileName = strFilePath + "Neoden4-" + strTargetLayer + "-Layer " + filename(B.name);
+		string fileSave = filesetext(strFileName, ".csv");
+
+		string strSaveName = dlgFileSave(strTargetLayer + " - Save File", fileSave, "*.csv");
+
+		if (fileSave == "") {
+			exit(0);
+		}
+
+		output(strSaveName) {
+			printf("Designator,Footprint,Mid X,Mid Y,Layer,Rotation,Comment\n");
+			int first = 0;
+			B.elements(E) {
+				int wasSmd = 0,	xmax = -2147483648, xmin = 2147483647, ymax = xmax, ymin = xmin;
+				real angle = 0;
+				E.package.contacts(C) {
+					if (C.smd && C.smd.layer == intTargetLayer) {
+						wasSmd = 1;
+						//Locating the center of the part, which in some cases is not the origin.
+						if (C.x > xmax) xmax = C.x;
+						if (C.y > ymax) ymax = C.y;
+						if (C.x < xmin) xmin = C.x;
+						if (C.y < ymin) ymin = C.y;
+					}
+				}
+
+				if (wasSmd) {
+					string strMPN = "";
+					E.attributes(A) {
+						if (A.name == "MPN") {
+							strMPN = A.value;
+						}
+					}
+
+					int xCenter = (xmin + xmax) / 2;
+					int yCenter = (ymin + ymax) / 2;
+
+					if (E.angle <= 180) {
+						angle = E.angle;
+					}
+					else {
+						angle = E.angle - 360;
+					}
+
+					if (first == 0) {
+						firstX = firstX - u2mm(xCenter);
+						firstY = firstY - u2mm(yCenter);
+						first = 1;
+					}
+					offsetX = u2mm(xCenter) + firstX;
+					offsetY = u2mm(yCenter) + firstY;
+					printf("%s,%s,%.2fmm,%.2fmm,T,%.0f,%s\n", E.name, E.package.name, offsetX, offsetY, angle, strMPN);
+				}
+			}
+		}
+
+	}
+}
+
+if (board) board(B) {
+	real firstX = 0.0;
+	real firstY = 0.0;
+
+	int Result = dlgDialog("First component machine values") {
+		dlgLabel("Put a board in the machine and measure");
+		dlgLabel("the coordinates of the first part.");
+		dlgSpacing(20);
 		dlgGridLayout{
-			dlgCell(0,0) dlgLabel("Machine xy of the first component:");
-			dlgCell(0,1) dlgRealEdit(mx, -1.0, 1000.0);
-			dlgCell(0,2) dlgRealEdit(my, -1.0, 1000.0)
+			dlgCell(0,0) dlgLabel("X coordinate of first part:");
+			dlgCell(0,1) dlgRealEdit(firstX, -1.0, 1000.0);
+		}
+		dlgGridLayout{
+			dlgCell(0, 0) dlgLabel("Y coordinate of first part:");
+			dlgCell(0,2) dlgRealEdit(firstY, -1.0, 1000.0)
 		}
 		dlgSpacing(10);
 		dlgHBoxLayout{
-			dlgPushButton("+Generate") {
+			dlgPushButton("+Generate Top") {
 				dlgAccept();
-				output(fileName) {
-					printf("Designator,Footprint,Mid X,Mid Y,Layer,Rotation,Comment\n");
-
-					int first = 0;
-					B.elements(E) {
-						int wasSmd = 0;
-						real angle = 0;
-						E.package.contacts(C) {
-							if (C.smd && C.smd.layer == 1) {
-								wasSmd = 1;
-							}
-						}
-
-						if (wasSmd) {
-							string strMPN = "";
-							E.attributes(A) {
-								if (A.name == "MPN") {
-									strMPN = A.value;
-								}
-							}
-							string strFootprint = "";
-							if (E.angle <= 180) {
-								angle = E.angle;
-							}								
-							else {
-								angle = E.angle - 360;
-							}
-							if (first == 0) {
-								mx = mx - u2mm(E.x);
-								my = my - u2mm(E.y);
-								cx = u2mm(E.x) + mx;
-								cy = u2mm(E.y) + my;
-								first = 1;
-							}
-							else {
-								cx = u2mm(E.x) + mx;
-								cy = u2mm(E.y) + my;
-							}
-							printf("%s,%s,%.2fmm,%.2fmm,T,%.0f,%s\n", E.name, E.package.name, cx, cy, angle, strMPN);
-						}
-					}
-				}
+				saveLayer("Top", firstX, firstY);
 			}
-			dlgPushButton("Cancel") dlgReject();
+			dlgPushButton("Generate Bottom") {
+				dlgAccept();
+				saveLayer("Bottom", firstX, firstY);
+			}
+			dlgPushButton("-Cancel") {
+				dlgReject();
+			}
 		}
 	};
+}
+else {
+	dlgMessageBox("\n    Start this ULP in a Board    \n");
+	exit(0);
 }
