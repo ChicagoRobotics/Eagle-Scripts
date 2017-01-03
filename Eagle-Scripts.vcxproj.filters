@@ -15,10 +15,12 @@
     </Filter>
   </ItemGroup>
   <ItemGroup>
-    <None Include="Jamie-TM245P.ulp" />
     <None Include="Jamie-gerb274x.cam" />
     <None Include="Jamie-panelize.ulp" />
-    <None Include="Jamie-Neoden4-v2.ulp" />
     <None Include="TM245P-generate-layers.ulp" />
+    <None Include="garbage-Neoden4.ulp" />
+    <None Include="test-Neoden4-generate-layers.ulp" />
+    <None Include="Neoden4-generate-layers.ulp" />
+    <None Include="Neoden4 v3.ulp" />
   </ItemGroup>
 </Project>

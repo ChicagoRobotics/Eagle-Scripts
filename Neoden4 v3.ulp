@@ -1,0 +1,42 @@
+#usage "<b>TM245P pick and place file generator</b>\n"
+"<p>Generates control files for the TM245P pick and place machine.</p>"
+"<author>Authored by Jamie Laing (jlaing@ChicagoRobotics.net), based on work done by Patrick Van Oosterwijck (patrick@silicognition.com),"
+"adapted from code found on DangerousPrototypes.com</author>"
+
+// Provided as is, without warranty.  Use at your own risk.
+
+void saveLayer(string strLayer) {
+
+}
+
+if (board) board(B) {
+	real mx = -1.0;
+	real my = -1.0;
+	real cx = 0.0;
+	real cy = 0.0;
+
+	int Result = dlgDialog("Machine parameters") {
+		dlgGridLayout{
+			dlgCell(0,0) dlgLabel("Machine xy of the first component:");
+			dlgCell(0,1) dlgRealEdit(mx, -1.0, 1000.0);
+			dlgCell(0,2) dlgRealEdit(my, -1.0, 1000.0)
+		}
+		dlgSpacing(10);
+		dlgHBoxLayout{
+			dlgPushButton("+Generate Top") {
+				dlgAccept();
+				saveLayer("Top");
+			}
+			dlgPushButton("+Generate Bottom") {
+				dlgAccept();
+			}
+			dlgPushButton("-Cancel") {
+				dlgReject();
+			}
+		}
+	};
+}
+else {
+	dlgMessageBox("\n    Start this ULP in a Board    \n");
+	exit(0);
+}
