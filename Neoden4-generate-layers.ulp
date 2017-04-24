@@ -1,5 +1,5 @@
-#usage "<b>TM245P pick and place file generator</b>\n"
-	"<p>Generates control files for the TM245P pick and place machine.</p>"
+#usage "<b>Neoden4 pick and place file generator</b>\n"
+	"<p>Generates control files for the Neoden4 pick and place machine.</p>"
 	"<author>Authored by Jamie Laing (jlaing@ChicagoRobotics.net), based on work done by Patrick Van Oosterwijck (patrick@silicognition.com),"
 	"adapted from code found on DangerousPrototypes.com</author>"
 

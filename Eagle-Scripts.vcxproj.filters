@@ -19,5 +19,6 @@
     <None Include="Jamie-panelize.ulp" />
     <None Include="TM245P-generate-layers.ulp" />
     <None Include="Neoden4-generate-layers.ulp" />
+    <None Include="CrcSmdUpload-generate-layers.ulp" />
   </ItemGroup>
 </Project>

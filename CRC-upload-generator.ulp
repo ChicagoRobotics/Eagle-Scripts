@@ -1,0 +1,93 @@
+﻿string str_replace(string search, string replace, string subject) {
+	int lastpos = 0;
+	while (strstr(subject, search, lastpos) >= 0) {
+		int pos = strstr(subject, search, lastpos);
+		string before = strsub(subject, 0, pos);
+		string after = strsub(subject, pos + strlen(search));
+		subject = before + replace + after;
+		lastpos = pos + strlen(replace);
+	}
+	return subject;
+}
+
+void generateUpload() {
+	board(B) {
+		string strFilePath = filedir(B.name);
+		string strFileName = strFilePath + "CRC-upload-" + filename(B.name);
+		string fileSave = filesetext(strFileName, ".csv");
+
+		string strSaveName = dlgFileSave("Save File", fileSave, "*.csv");
+
+		if (fileSave == "") {
+			exit(0);
+		}
+
+		output(strSaveName) {
+			printf("Layer,Part Name,Package,Value,Library,X mm,Y mm,Angle,MPN\n");
+			int first = 0;
+			B.elements(E) {
+				int blnSMD = 0, xmax = -2147483648, xmin = 2147483647, ymax = xmax, ymin = xmin;
+				real angle = 0;
+				string strLayer = "Top";
+				E.package.contacts(C) {
+					if (C.smd) {
+						blnSMD = 1;
+						//Locating the center of the part, which in some cases is not the origin.
+						if (C.x > xmax) xmax = C.x;
+						if (C.y > ymax) ymax = C.y;
+						if (C.x < xmin) xmin = C.x;
+						if (C.y < ymin) ymin = C.y;
+						if (C.smd.layer == 16) strLayer = "Bottom";
+					}
+					
+				}
+
+				if(blnSMD){
+					int xCenter = (xmin + xmax) / 2;
+					int yCenter = (ymin + ymax) / 2;
+
+					string strMPN = "";
+					E.attributes(A) {
+						if (A.name == "MPN") {
+							strMPN = A.value;
+						}
+					}
+
+					if (E.angle <= 180) {
+						angle = E.angle;
+					}
+					else {
+						angle = E.angle - 360;
+					}
+
+					//Commas are not fun in CSV files.
+					string strValue = str_replace(",", ".", E.value);
+
+					printf("%s,%s,%s,%s,%s,%.3f,%.3f,%.2f,%s\n", strLayer, E.name, E.package.name, strValue, E.package.library, u2mm(xCenter), u2mm(yCenter), angle, strMPN);
+				}
+			}
+		}
+	}
+}
+
+if (board) board(B) {
+	int Result = dlgDialog("CrcSmd Upload Generator") {
+		dlgSpacing(20);
+		dlgLabel("This script generates an upload for");
+		dlgLabel("use with the CRC P&P online manager.");
+		dlgSpacing(20);
+		dlgHBoxLayout{
+			dlgPushButton("+Generate Upload") {
+				dlgAccept();
+				generateUpload();
+			}
+			dlgPushButton("-Cancel") {
+				dlgReject();
+			}
+		}
+	};
+}
+else {
+	dlgMessageBox("\n    Start this ULP in a Board    \n");
+	exit(0);
+}
